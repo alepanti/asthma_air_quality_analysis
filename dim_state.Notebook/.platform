@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "dim_state",
+    "description": "Create and populate table for dim_state.\nContains state information for states with valid asthma estimates from CDC source."
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "daa83020-6116-b7ee-4e91-56e42a955ff0"
+  }
+}

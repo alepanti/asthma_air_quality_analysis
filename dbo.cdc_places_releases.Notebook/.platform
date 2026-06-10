@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "dbo.cdc_places_releases",
+    "description": "generate and populate table to map cdc places release years with dataset ids and data years.\n"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "65a0cc77-e18a-825d-4c7f-fd36aaaa7bd7"
+  }
+}
