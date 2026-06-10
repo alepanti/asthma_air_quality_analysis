@@ -29,13 +29,13 @@
 # CELL ********************
 
 # MAGIC %%sql
-# MAGIC create or replace table gol.dim_state
+# MAGIC create or replace table gold.dim_state
 # MAGIC using delta as 
 # MAGIC select distinct 
 # MAGIC     gz.state_abbr
 # MAGIC     ,c.state_name
-# MAGIC from sil.gaz_county gz
-# MAGIC left join sil.census c 
+# MAGIC from silver.gaz_county gz
+# MAGIC left join silver.census c 
 # MAGIC     on gz.county_fips = c.county_fips
 # MAGIC order by state_abbr;
 
@@ -56,9 +56,9 @@
 # MAGIC select 
 # MAGIC     count(distinct state_abbr) as uniq_states
 # MAGIC     ,count(*) as row_count
-# MAGIC from gol.dim_state;
+# MAGIC from gold.dim_state;
 # MAGIC 
-# MAGIC select count(distinct state_abbr) as states from sil.gaz_county;
+# MAGIC select count(distinct state_abbr) as states from silver.gaz_county;
 
 
 # METADATA ********************
