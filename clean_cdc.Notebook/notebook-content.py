@@ -237,7 +237,10 @@ cleaned_df.write.format('delta').mode('append') \
 
 # MAGIC %%sql
 # MAGIC 
-# MAGIC select * from silver.cdc_places limit 20;
+# MAGIC select count(distinct *) as unique
+# MAGIC ,count(*) as total_rows
+# MAGIC from silver.cdc_places;
+
 
 # METADATA ********************
 

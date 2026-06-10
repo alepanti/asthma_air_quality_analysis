@@ -28,7 +28,7 @@
 
 # CELL ********************
 
-from pyspark.sql.functions import concat, lpad, col, sum
+from pyspark.sql.functions import concat, lpad, col, sum, count, avg
 
 # METADATA ********************
 
@@ -204,7 +204,54 @@ oz_df.groupBy(oz_df.columns) \
 
 # CELL ********************
 
-cleaned_oz = oz_df.distinct()
+oz_df = oz_df.distinct()
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# MARKDOWN ********************
+
+# #### Check for Multiple Readings in Single County
+
+# CELL ********************
+
+oz_df.groupBy('county_fips') \
+    .agg(count('*').alias('record_count')) \
+    .filter('record_count > 1') \
+    .show()
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# MARKDOWN ********************
+
+# #### Aggregate Readings Using Average per County
+
+# CELL ********************
+
+oz_agg = (
+    oz_df
+    .groupBy(
+        'state_code'
+        ,'county_code'
+        ,'county_fips'
+        ,'data_year'
+        ,'pollutant_standard'
+    )
+    .agg(
+        avg('arithmetic_mean').alias('arithmetic_mean'),
+        avg('ninety_eighth_percentile').alias('ninety_eighth_percentile'),
+        avg('observation_percent').alias('observation_percent')
+    )
+)
 
 # METADATA ********************
 
@@ -224,7 +271,7 @@ spark.sql(f"""
     where data_year = {data_year}
 """)
 
-cleaned_oz.write.format('delta').mode('append') \
+oz_agg.write.format('delta').mode('append') \
     .saveAsTable('capstone_lh.silver.aqs_oz')
 
 # METADATA ********************
@@ -238,7 +285,10 @@ cleaned_oz.write.format('delta').mode('append') \
 
 # MAGIC %%sql
 # MAGIC 
-# MAGIC select * from silver.aqs_oz limit 20;
+# MAGIC select count(distinct *) as unique
+# MAGIC ,count(*) as total_rows
+# MAGIC from silver.aqs_oz;
+
 
 # METADATA ********************
 
@@ -384,7 +434,50 @@ pm_df.groupBy(pm_df.columns) \
 
 # CELL ********************
 
-pm_cleaned = pm_df.distinct()
+pm_df = pm_df.distinct()
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# MARKDOWN ********************
+
+# #### Check for Multiple Readings from One County
+
+# CELL ********************
+
+pm_df.groupBy('county_fips') \
+    .agg(count('*').alias('record_count')) \
+    .filter('record_count > 1') \
+    .show()
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+pm_agg = (
+    pm_df
+    .groupBy(
+        'state_code'
+        ,'county_code'
+        ,'county_fips'
+        ,'data_year'
+        ,'pollutant_standard'
+    )
+    .agg(
+        avg('arithmetic_mean').alias('arithmetic_mean'),
+        avg('ninety_eighth_percentile').alias('ninety_eighth_percentile'),
+        avg('observation_percent').alias('observation_percent')
+    )
+)
 
 # METADATA ********************
 
@@ -404,7 +497,7 @@ spark.sql(f"""
     where data_year = {data_year}
 """)
 
-pm_cleaned.write.format('delta').mode('append') \
+pm_agg.write.format('delta').mode('append') \
     .saveAsTable('capstone_lh.silver.aqs_pm25')
 
 # METADATA ********************
@@ -418,7 +511,10 @@ pm_cleaned.write.format('delta').mode('append') \
 
 # MAGIC %%sql
 # MAGIC 
-# MAGIC select * from silver.aqs_pm25 limit 20;
+# MAGIC select count(distinct *) as unique
+# MAGIC ,count(*) as total_rows
+# MAGIC from silver.aqs_pm25;
+
 
 # METADATA ********************
 
