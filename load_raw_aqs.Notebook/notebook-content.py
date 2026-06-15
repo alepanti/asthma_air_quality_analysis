@@ -120,7 +120,7 @@ pm25_sp_df.write.format('delta').mode('append').option('mergeSchema', 'True') \
 
 oz_df = pd.DataFrame()
 
-for code in fips:
+for code in state_code:
     if int(code) > 56: # only load US
         break
     print('loading state' , code)
