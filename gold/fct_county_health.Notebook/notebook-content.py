@@ -22,21 +22,43 @@
 
 # CELL ********************
 
-try:
-    release_year = int(mssparkutils.widgets.get('release_year'))
-except:
-    release_year = int(spark.sql("""
-        select max(release_year) 
-        from silver.cdc_places
-    """).collect()[0][0])
+import logging
 
-data_year = int(spark.sql(f"""
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+release_year = 2025
+
+try:
+    release_year = int(release_year)
+    logger.info(f'Using provided release_year parameter: {release_year}')
+except Exception:
+    release_year = int(spark.sql("""
+        select MAX(release_year) as latest
+        from dbo.cdc_places_releases
+    """).collect()[0]['latest'])
+
+    logger.warning(f'No valid parameter found. Using latest release_year: {release_year}')
+
+data_year = spark.sql(f"""
     select data_year
     from dbo.cdc_places_releases
     where release_year = {release_year}
-""").collect()[0][0])
+""").collect()[0]['data_year']
 
-print(f'Building fact table for CDC {release_year} Release, Based on {data_year} Data')
+logger.info(f'Building fact table for CDC {release_year} Release, Based on {data_year} Data')
 
 # METADATA ********************
 

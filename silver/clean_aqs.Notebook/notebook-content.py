@@ -29,6 +29,14 @@
 # CELL ********************
 
 from pyspark.sql.functions import concat, lpad, col, sum, count, avg
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
 
 # METADATA ********************
 
@@ -43,21 +51,26 @@ from pyspark.sql.functions import concat, lpad, col, sum, count, avg
 
 # CELL ********************
 
+release_year = 2025
+
 try:
-    release_year = int(mssparkutils.widgets.get('release_year'))
-except:
+    release_year = int(release_year)
+    logger.info(f'Using provided release_year parameter: {release_year}')
+except Exception:
     release_year = int(spark.sql("""
-        select max(release_year) AS latest
-        from bronze.cdc_places
+        select MAX(release_year) as latest
+        from dbo.cdc_places_releases
     """).collect()[0]['latest'])
 
-data_year = int(spark.sql(f"""
-    select data_year as data_year
-    from bronze.cdc_places
-    where release_year = {release_year}
-""").collect()[0]['data_year'])
+    logger.warning(f'No valid parameter found. Using latest release_year: {release_year}')
 
-print(f'Cleaning {data_year} AQS Data')
+data_year = spark.sql(f"""
+    SELECT data_year
+    FROM dbo.cdc_places_releases
+    WHERE release_year = {release_year}
+""").collect()[0]['data_year']
+
+logger.info(f'Cleaning {data_year} AQS Data')
 
 
 # METADATA ********************
@@ -114,7 +127,7 @@ oz_df = raw_oz.select(
 
 # CELL ********************
 
-oz_df.select('pollutant_standard').distinct().show(truncate=False)
+logger.info(f"Available Pollutant Standards: {oz_df.select('pollutant_standard').distinct().show(truncate=False)}")
 
 # METADATA ********************
 
@@ -303,9 +316,23 @@ oz_agg.write.format('delta').mode('append') \
 
 # CELL ********************
 
+# MAGIC %%sql
+# MAGIC select arithmetic_mean from bronze.aqs_pm25
+# MAGIC where year = 2023;
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
 raw_pm = spark.read.table('capstone_lh.bronze.aqs_pm25') \
     .filter(col('year') == data_year)
 raw_pm.printSchema()
+raw_pm.count()
 
 # METADATA ********************
 
@@ -344,7 +371,8 @@ pm_df = raw_pm.select(
 
 # CELL ********************
 
-pm_df.select('pollutant_standard').distinct().show(truncate=False)
+
+logger.info(f"Available Pollutant Standards: {pm_df.select('pollutant_standard').distinct().show(truncate=False)}")
 
 # METADATA ********************
 

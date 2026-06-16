@@ -25,6 +25,14 @@
 import requests
 import pandas as pd
 from pyspark.sql.functions import lit
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
 
 # METADATA ********************
 
@@ -36,26 +44,29 @@ from pyspark.sql.functions import lit
 # CELL ********************
 
 try:
-    release_year = int(mssparkutils.widgets.get("release_year"))
-except:
+    release_year = int(release_year)
+    logger.info(f'Using provided release_year parameter: {release_year}')
+except Exception:
     release_year = int(spark.sql("""
-        select max(release_year) as latest
+        select MAX(release_year) as latest
         from dbo.cdc_places_releases
     """).collect()[0]['latest'])
 
+    logger.warning(f'No valid parameter found. Using latest release_year: {release_year}')
+
 dataset_id = spark.sql(f"""
-    SELECT dataset_id
-    FROM dbo.cdc_places_releases
-    WHERE release_year = {release_year}
+    select dataset_id
+    from dbo.cdc_places_releases
+    where release_year = {release_year}
 """).collect()[0]['dataset_id']
 
 data_year = spark.sql(f"""
-    SELECT data_year
-    FROM dbo.cdc_places_releases
-    WHERE release_year = {release_year}
+    select data_year
+    from dbo.cdc_places_releases
+    where release_year = {release_year}
 """).collect()[0]['data_year']
 
-print(release_year, dataset_id, data_year)
+logger.info(f'Loading {release_year} CDC release, ID: {dataset_id}, data year {data_year}')
 
 # METADATA ********************
 
@@ -85,9 +96,9 @@ while True:
     cdc_data.extend(batch)
 
     offset += limit
-    print(f'loaded {len(cdc_data)}')
+    logger.info(f'loaded {len(cdc_data)}')
 
-print(f'final row count = {len(cdc_data)}')
+logger.info(f'final row count = {len(cdc_data)}')
 
 # METADATA ********************
 
@@ -126,6 +137,9 @@ cdc_df.printSchema()
 # META }
 
 # CELL ********************
+
+logger.info('Truncate and insert capstone_lh.bronze.cdc_places')
+
 
 spark.sql(f"""
     delete from capstone_lh.bronze.cdc_places

@@ -25,6 +25,14 @@
 import requests
 import pandas as pd
 from pyspark.sql.functions import lit
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
 
 # METADATA ********************
 
@@ -35,19 +43,26 @@ from pyspark.sql.functions import lit
 
 # CELL ********************
 
+release_year = 2025
+
 try:
-    release_year = int(mssparkutils.widgets.get('release_year'))
-except:
+    release_year = int(release_year)
+    logger.info(f'Using provided release_year parameter: {release_year}')
+except Exception:
     release_year = int(spark.sql("""
-        select max(release_year) as latest
+        select MAX(release_year) as latest
         from dbo.cdc_places_releases
     """).collect()[0]['latest'])
+
+    logger.warning(f'No valid parameter found. Using latest release_year: {release_year}')
 
 data_year = spark.sql(f"""
     SELECT data_year
     FROM dbo.cdc_places_releases
     WHERE release_year = {release_year}
 """).collect()[0]['data_year']
+
+logger.info(f'Loading Census PLACES {data_year}')
 
 # METADATA ********************
 
@@ -159,6 +174,7 @@ census = census.withColumn('data_year', lit(data_year))
 
 # CELL ********************
 
+logger.info('Truncate and insert capstone_lh.bronze.census')
 spark.sql(f"""
     delete from bronze.census
     where data_year = {data_year}

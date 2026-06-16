@@ -29,6 +29,13 @@
 # CELL ********************
 
 from pyspark.sql.functions import split, col, sum
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 # METADATA ********************
 
@@ -43,21 +50,26 @@ from pyspark.sql.functions import split, col, sum
 
 # CELL ********************
 
+release_year = 2025
+
 try:
-    release_year = int(mssparkutils.widgets.get('release_year'))
-except:
+    release_year = int(release_year)
+    logger.info(f'Using provided release_year parameter: {release_year}')
+except Exception:
     release_year = int(spark.sql("""
-        select max(release_year) AS latest
-        from bronze.cdc_places
+        select MAX(release_year) as latest
+        from dbo.cdc_places_releases
     """).collect()[0]['latest'])
 
-data_year = int(spark.sql(f"""
-    select data_year as data_year
-    from bronze.cdc_places
-    where release_year = {release_year}
-""").collect()[0]['data_year'])
+    logger.warning(f'No valid parameter found. Using latest release_year: {release_year}')
 
-print(f'Cleaning {data_year} Census Data')
+data_year = spark.sql(f"""
+    SELECT data_year
+    FROM dbo.cdc_places_releases
+    WHERE release_year = {release_year}
+""").collect()[0]['data_year']
+
+logger.info(f'Cleaning {data_year} Census Data')
 
 
 # METADATA ********************
@@ -83,9 +95,6 @@ raw_df.printSchema()
 # META   "language": "python",
 # META   "language_group": "synapse_pyspark"
 # META }
-
-# MARKDOWN ********************
-
 
 # MARKDOWN ********************
 
