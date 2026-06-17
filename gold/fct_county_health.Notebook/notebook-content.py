@@ -39,7 +39,6 @@ logger = logging.getLogger(__name__)
 
 # CELL ********************
 
-release_year = 2022
 try:
     release_year = int(release_year)
     logger.info(f'Using provided release_year parameter: {release_year}')
@@ -168,7 +167,7 @@ gold_check = spark.sql("""
     GROUP BY release_year, data_year
     ORDER BY release_year, data_year
 """)
-print(gold_check)
+gold_check.show()
 
 # METADATA ********************
 
