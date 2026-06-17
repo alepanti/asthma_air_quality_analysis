@@ -51,8 +51,6 @@ logger = logging.getLogger(__name__)
 
 # CELL ********************
 
-release_year = 2025
-
 try:
     release_year = int(release_year)
     logger.info(f'Using provided release_year parameter: {release_year}')
@@ -316,23 +314,10 @@ oz_agg.write.format('delta').mode('append') \
 
 # CELL ********************
 
-# MAGIC %%sql
-# MAGIC select arithmetic_mean from bronze.aqs_pm25
-# MAGIC where year = 2023;
-
-# METADATA ********************
-
-# META {
-# META   "language": "sparksql",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
 raw_pm = spark.read.table('capstone_lh.bronze.aqs_pm25') \
     .filter(col('year') == data_year)
-raw_pm.printSchema()
-raw_pm.count()
+
+logger.info(f'Loaded {raw_pm.count()} rows from bronze')
 
 # METADATA ********************
 
@@ -391,6 +376,7 @@ pm_df = pm_df.filter(
     (col('pollutant_standard') == 'PM25 Annual 2012') &
     (col('validity_indicator') == 'Y')
 )
+pm_df.count()
 
 # METADATA ********************
 
@@ -413,7 +399,7 @@ pm_df = (pm_df
         )
     .withColumnRenamed('year', 'data_year')
 )
-pm_df.printSchema()
+pm_df.count()
 
 # METADATA ********************
 
@@ -506,6 +492,7 @@ pm_agg = (
         avg('observation_percent').alias('observation_percent')
     )
 )
+logger.info(f'inserting {pm_df.count()} rows into silver.aqs_pm25')
 
 # METADATA ********************
 

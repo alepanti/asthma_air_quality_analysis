@@ -51,8 +51,6 @@ logger = logging.getLogger(__name__)
 
 # CELL ********************
 
-release_year = 2025
-
 try:
     release_year = int(release_year)
     logger.info(f'Using provided release_year parameter: {release_year}')
@@ -64,7 +62,7 @@ except Exception:
 
     logger.warning(f'No valid parameter found. Using latest release_year: {release_year}')
 
-logger.info(f'Cleaning {release_year} CDC Data')
+logger.info(f'Cleaning {release_year} CDC Data release')
 
 
 # METADATA ********************
@@ -253,6 +251,20 @@ cleaned_df.write.format('delta').mode('append') \
 # MAGIC ,count(*) as total_rows
 # MAGIC from silver.cdc_places;
 
+
+# METADATA ********************
+
+# META {
+# META   "language": "sparksql",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+# MAGIC %%sql
+# MAGIC 
+# MAGIC select count(1) from silver.cdc_places where release_year = 2022;
+# MAGIC select * from silver.cdc_places where release_year = 2022 limit 10;
 
 # METADATA ********************
 

@@ -39,8 +39,7 @@ logger = logging.getLogger(__name__)
 
 # CELL ********************
 
-release_year = 2025
-
+release_year = 2022
 try:
     release_year = int(release_year)
     logger.info(f'Using provided release_year parameter: {release_year}')
@@ -99,9 +98,11 @@ logger.info(f'Building fact table for CDC {release_year} Release, Based on {data
 
 # CELL ********************
 
+logger.info(f'Deleting rows from same year before insertion')
 spark.sql(f"""
     delete from gold.fct_county_health
-    where data_year = {data_year};
+    where data_year = {data_year}
+        and release_year = {release_year};
 """)
 
 # METADATA ********************
@@ -148,6 +149,26 @@ spark.sql(f"""
     order by county_fips;
 """)
 
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "synapse_pyspark"
+# META }
+
+# CELL ********************
+
+gold_check = spark.sql("""
+    SELECT
+        release_year,
+        data_year,
+        COUNT(*) AS row_count
+    FROM gold.fct_county_health
+    GROUP BY release_year, data_year
+    ORDER BY release_year, data_year
+""")
+print(gold_check)
 
 # METADATA ********************
 

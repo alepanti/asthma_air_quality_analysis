@@ -43,8 +43,6 @@ logger = logging.getLogger(__name__)
 
 # CELL ********************
 
-release_year = 2025
-
 try:
     release_year = int(release_year)
     logger.info(f'Using provided release_year parameter: {release_year}')

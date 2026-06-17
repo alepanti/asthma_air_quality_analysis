@@ -57,8 +57,6 @@ logger = logging.getLogger(__name__)
 
 aqs.aqs_credentials(username='apanti2@wgu.edu', key='goldgazelle15')
 
-release_year = 2025
-
 try:
     release_year = int(release_year)
     logger.info(f'Using provided release_year parameter: {release_year}')

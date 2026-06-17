@@ -34,7 +34,10 @@
           "workspaceId": "00000000-0000-0000-0000-000000000000",
           "parameters": {
             "release_year": {
-              "value": "@pipeline().parameters.release_year",
+              "value": {
+                "value": "@pipeline().parameters.release_year",
+                "type": "Expression"
+              },
               "type": "int"
             }
           }
@@ -56,7 +59,10 @@
           "workspaceId": "00000000-0000-0000-0000-000000000000",
           "parameters": {
             "release_year": {
-              "value": "@pipeline().parameters.release_year",
+              "value": {
+                "value": "@pipeline().parameters.release_year",
+                "type": "Expression"
+              },
               "type": "int"
             }
           }
@@ -78,7 +84,10 @@
           "workspaceId": "00000000-0000-0000-0000-000000000000",
           "parameters": {
             "release_year": {
-              "value": "@pipeline().parameters.release_year",
+              "value": {
+                "value": "@pipeline().parameters.release_year",
+                "type": "Expression"
+              },
               "type": "int"
             }
           }
@@ -107,7 +116,10 @@
           "workspaceId": "00000000-0000-0000-0000-000000000000",
           "parameters": {
             "release_year": {
-              "value": "@pipeline().parameters.release_year",
+              "value": {
+                "value": "@pipeline().parameters.release_year",
+                "type": "Expression"
+              },
               "type": "int"
             }
           }
@@ -136,7 +148,10 @@
           "workspaceId": "00000000-0000-0000-0000-000000000000",
           "parameters": {
             "release_year": {
-              "value": "@pipeline().parameters.release_year",
+              "value": {
+                "value": "@pipeline().parameters.release_year",
+                "type": "Expression"
+              },
               "type": "int"
             }
           }
@@ -162,7 +177,13 @@
         "type": "TridentNotebook",
         "typeProperties": {
           "notebookId": "4c702a98-0113-9d46-43fb-2fb6f8512023",
-          "workspaceId": "00000000-0000-0000-0000-000000000000"
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "release_year": {
+              "value": "@pipeline().parameters.release_year",
+              "type": "int"
+            }
+          }
         },
         "policy": {
           "timeout": "0.12:00:00",
@@ -301,7 +322,13 @@
         "type": "TridentNotebook",
         "typeProperties": {
           "notebookId": "85791cb8-f6c1-9e1f-40ad-686c47d4dbda",
-          "workspaceId": "00000000-0000-0000-0000-000000000000"
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "release_year": {
+              "value": "@pipeline().parameters.release_year",
+              "type": "int"
+            }
+          }
         },
         "policy": {
           "timeout": "0.12:00:00",
