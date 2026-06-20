@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "MLExperiment",
+    "displayName": "asthma_lr_model"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "e4499937-2075-afea-4f07-0909aa165524"
+  }
+}

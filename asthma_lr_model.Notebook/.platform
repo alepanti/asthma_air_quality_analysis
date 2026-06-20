@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "asthma_lr_model"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "02c83a62-8ef0-941e-47a7-31f0140bb15b"
+  }
+}
