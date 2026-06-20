@@ -22,9 +22,11 @@
 
 # CELL ********************
 
-from pyspark.ml.regression import LinearRegression
 from pyspark.ml.feature import VectorAssembler
+from pyspark.ml.regression import RandomForestRegressor
 from pyspark.ml.evaluation import RegressionEvaluator
+import matplotlib.pyplot as plt
+import pandas as pd
 
 # METADATA ********************
 
@@ -87,8 +89,8 @@ train_data, test_data = data.randomSplit([0.7, 0.3], seed=42)
 
 # CELL ********************
 
-lr = LinearRegression(featuresCol='features', labelCol=target, predictionCol=f'pred_{target}')
-lr_model = lr.fit(train_data)
+rf = RandomForestRegressor(featuresCol='features', labelCol=target, predictionCol=f'pred_{target}', numTrees=100)
+rf_model = rf.fit(train_data)
 
 # METADATA ********************
 
@@ -99,7 +101,7 @@ lr_model = lr.fit(train_data)
 
 # CELL ********************
 
-predictions = lr_model.transform(test_data)
+predictions = rf_model.transform(test_data)
 
 # METADATA ********************
 
@@ -152,11 +154,16 @@ print(f'MAE on test data: {mae}')
 
 # CELL ********************
 
-coeff = lr_model.coefficients
-intercept = lr_model.intercept
+raw_importances = rf_model.featureImportances
 
-print('Coefficients: ', coeff)
-print('Intercetpt: ', intercept)
+importance_data = []
+for index, feature_name in enumerate(input_col):
+    importance_score = float(raw_importances[index])
+    importance_data.append((feature_name, importance_score))
+
+importance_df = pd.DataFrame(importance_data, columns=['Feature', 'Importance'])
+importance_df = importance_df.sort_values(by='Importance', ascending=False).reset_index(drop=True)
+
 
 # METADATA ********************
 
@@ -167,92 +174,13 @@ print('Intercetpt: ', intercept)
 
 # CELL ********************
 
-ranking = sorted(
-    list(zip(input_col, coeff, map(abs, coeff))),
-    key=lambda x: x[2],
-    reverse=True
-)
-
-print('Linear Regression Coefficient Ranking:')
-for feature, coefficient, rank in ranking:
-    print(f'    {feature}: coefficient = {coefficient}\n      abs_coefficient = {rank}')
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-data2_df = spark.read.table('capstone_lh.gold.ml_county_health')
-data2_df = data2_df.drop('county_fips', 'pm25_98p', 'ozone_98p')
-input_col = [
-    'smoke_crude_prev'
-    ,'obesity_crude_prev'
-    ,'ozone_mean'
-    ,'pm25_mean'
-    ,'poverty_rate'
-    ,'pct_white'
-    ,'pct_black_aa'
-    ,'pct_hisp_lat'
-]
-
-target = 'asthma_crude_prev'
-
-assembler = VectorAssembler(inputCols=input_col, outputCol='features')
-
-data2_df = assembler.transform(data2_df)
-data2 = data2_df.select('features', target)
-
-train_data, test_data = data2.randomSplit([0.7, 0.3], seed=42)
-
-lr2 = LinearRegression(featuresCol='features', labelCol=target, predictionCol=f'pred_{target}')
-lr2_model = lr2.fit(train_data)
-
-predictions = lr2_model.transform(test_data)
-
-# METADATA ********************
-
-# META {
-# META   "language": "python",
-# META   "language_group": "synapse_pyspark"
-# META }
-
-# CELL ********************
-
-eval_rmse = RegressionEvaluator(labelCol=target, predictionCol=f'pred_{target}', metricName='rmse')
-rmse = eval_rmse.evaluate(predictions)
-
-print(f'RMSE on test data: {rmse}')
-
-eval_r2 = RegressionEvaluator(labelCol=target, predictionCol=f'pred_{target}', metricName='r2')
-r2 = eval_r2.evaluate(predictions)
-
-print(f'R2 on test data: {r2}')
-
-eval_mae = RegressionEvaluator(labelCol=target, predictionCol=f'pred_{target}', metricName='mae')
-mae = eval_mae.evaluate(predictions)
-
-print(f'MAE on test data: {mae}')
-
-
-coeff = lr2_model.coefficients
-intercept = lr2_model.intercept
-
-print('Coefficients: ', coeff)
-print('Intercetpt: ', intercept)
-
-ranking2 = sorted(
-    list(zip(input_col, coeff, map(abs, coeff))),
-    key=lambda x: x[2],
-    reverse=True
-)
-
-print('\nLinear Regression Coefficient Ranking with Improved Selection:')
-for feature, coefficient, rank in ranking2:
-    print(f'    {feature}: coefficient = {coefficient}\n      abs_coefficient = {rank}')
+plt.barh(importance_df['Feature'], importance_df['Importance'])
+plt.xlabel('Importance')
+plt.ylabel('Feature Name')
+plt.title('Feature Importance')
+plt.tight_layout()
+plt.savefig(f'/lakehouse/default/Files/figures/rf_importance.png')
+plt.show()
 
 # METADATA ********************
 
